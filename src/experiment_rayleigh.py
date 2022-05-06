@@ -1,7 +1,7 @@
 import autograd.numpy as np
 
 from ropt import Problem
-from ropt.utils import show
+from ropt.utils import rlog_show
 from ropt.manifolds import Sphere
 from ropt.optimizers import SD, CG, LinesearchWolfe
 
@@ -37,6 +37,6 @@ if __name__ == '__main__':
     for opt in opts:
         results.append(opt.solve(problem))
 
-    show(results)
+    rlog_show(results)
     for result in results:
         result.to_csv()

@@ -26,12 +26,10 @@ class RoptLogger(object):
         df.to_csv(os.path.join(csv_dir, self.name + '.csv'), index=None, header=None)
 
 
-def show(results: list[RoptLogger], yscale: str='log') -> None:
+def rlog_show(results: list[RoptLogger], yscale: str='log') -> None:
     for result in results:
         x = range(result.n_iter)
-        y = []
-        for row in result.log:
-            y.append(row[0])
+        y = [row[0] for row in result.log]
         plt.plot(x, y, label=result.name)
 
     plt.legend()

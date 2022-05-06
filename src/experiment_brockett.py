@@ -3,7 +3,7 @@ import autograd.numpy as np
 from sklearn.datasets import make_spd_matrix
 
 from ropt import Problem
-from ropt.utils import show
+from ropt.utils import rlog_show
 from ropt.manifolds import Manifold, Stiefel
 from ropt.optimizers import Optimizer, SD, CG, Linesearch, LinesearchWolfe
 
@@ -43,4 +43,4 @@ if __name__ == '__main__':
     for opt in opts:
         results.append(opt.solve(problem))
 
-    show(results)
+    rlog_show(results)
