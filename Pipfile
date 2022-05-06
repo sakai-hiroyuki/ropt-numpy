@@ -10,7 +10,6 @@ numpy = "*"
 autograd = "*"
 matplotlib = "*"
 sklearn = "*"
-networkx = "*"
 tqdm = "*"
 pandas = "*"
 
