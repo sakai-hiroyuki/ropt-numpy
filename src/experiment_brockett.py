@@ -1,4 +1,3 @@
-from typing import Callable
 import autograd.numpy as np
 from sklearn.datasets import make_spd_matrix
 
@@ -25,7 +24,7 @@ if __name__ == '__main__':
     M: Manifold = Stiefel(p, n)
     A: np.ndarray = make_spd_matrix(n)
     N: np.ndarray = np.diag(np.array([n + 1 for n in range(p)]))
-    loss: Callable = create_loss(A, N)
+    loss = create_loss(A, N)
     problem: Problem = Problem(M, loss)
     linesearch: Linesearch = LinesearchWolfe()
 
