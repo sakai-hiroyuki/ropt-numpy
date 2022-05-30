@@ -11,7 +11,8 @@ class CG(Optimizer):
     Parameters
     ----------
     betype: str='FR'
-        Select the suitable method from 'FR' (see [2]), 'DY' (see [3]), 'PRP', 'PRP+', 'HS', 'HS+', 'Hybrid1' and 'Hybrid2'.
+        Select the suitable method from 'FR' (see [2]), 'DY' (see [3]),
+        'PRP', 'PRP+', 'HS', 'HS+', 'Hybrid1' and 'Hybrid2'.
     linesearch :
         Specify the line search algorithm when calculating the step size.
     

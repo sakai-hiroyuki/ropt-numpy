@@ -14,9 +14,6 @@ class RoptLogger(object):
         return len(self.log)
 
     def writelog(self, gn: float, val: float, time: float) -> None:
-        '''
-        Append the information of the iterations.
-        '''
         self.log.append([gn, val, time])
 
     def to_csv(self, csv_dir: str='./output') -> None:

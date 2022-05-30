@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from ropt.utils import RoptLogger
 
 
 class Optimizer(ABC):
@@ -13,11 +14,11 @@ class Optimizer(ABC):
         self.max_iter = max_iter
         self.min_gn = min_gn
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._name
 
     @abstractmethod
-    def solve(self):
+    def solve(self, problem) -> RoptLogger:
         ...
 
     def stop(self, n_iter: int, gn: float) -> bool:        

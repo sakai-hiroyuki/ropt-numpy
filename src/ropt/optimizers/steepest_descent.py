@@ -29,7 +29,7 @@ class SD(Optimizer):
             name = 'SD'
         super(SD, self).__init__(name=name)
 
-    def solve(self, problem):
+    def solve(self, problem) -> RoptLogger:
         M = problem.manifold
         xk = M.initial
 

@@ -20,10 +20,12 @@ class LinesearchArmijo(Linesearch):
         Constant in Armijo rule. Must be 0 < c1 < 1.
     '''
     def __init__(self, c1: float=1e-4):
+        if not 0.0 < c1 < 1.0:
+            raise ValueError(f'Invalid value: c1 = {c1}.')
         self.c1 = c1
     
     def __str__(self) -> str:
-        return 'Armijo (c1={0})'.format(self.c1)
+        return f'Armijo (c1={self.c1})'
 
     def __call__(self, problem, xk: np.ndarray, d: np.ndarray, initial: float=1., shrinkage: float=0.5) -> float:
         return self.search(problem, xk, d, initial=initial, shrinkage=shrinkage)
@@ -76,11 +78,13 @@ class LinesearchWolfe(Linesearch):
         Constant in curvature condition. Must be 0 < c1 < c2 < 1.
     '''
     def __init__(self, c1: float=1e-4, c2: float=0.9):
+        if not 0.0 < c1 < c2 < 1.0:
+            raise ValueError(f'Invalid values: (c1, c2) = ({c1}, {c2}).')
         self.c1 = c1
         self.c2 = c2
 
     def __str__(self) -> str:
-        return 'strong Wolfe (c1={0}, c2={1})'.format(self.c1, self.c2)
+        return f'strong Wolfe (c1={self.c1}, c2={self.c2})'
 
     def __call__(self, problem, xk: np.ndarray, d: np.ndarray, maxiter: int=10) -> float:
         return self.search(problem, xk, d, maxiter=maxiter)
