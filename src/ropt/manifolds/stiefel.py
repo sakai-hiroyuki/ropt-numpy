@@ -6,7 +6,7 @@ from ropt.manifolds import Manifold
 
 
 class Stiefel(Manifold):
-    def __init__(self, p: int, n: int):
+    def __init__(self, p: int, n: int) -> None:
         self._p = p
         self._n = n
 

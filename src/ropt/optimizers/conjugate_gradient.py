@@ -1,6 +1,8 @@
 import time
+from typing import Optional
+import numpy as np
 from ropt.utils import RoptLogger
-from ropt.optimizers import Optimizer, LinesearchArmijo
+from ropt.optimizers import Optimizer, LinesearchArmijo, Linesearch
 
 
 class CG(Optimizer):
@@ -26,7 +28,7 @@ class CG(Optimizer):
     [3] Sato, Hiroyuki. "A Dai–Yuan-type Riemannian conjugate gradient method with the weak Wolfe conditions."
         Computational Optimization and Applications 64.1 (2016): 101-118.
     '''
-    def __init__(self, betype: str='FR', linesearch=None, reset: bool=True, name: str=None):
+    def __init__(self, betype: str='FR', linesearch=Optional[Linesearch], reset: bool=True, name: str=None) -> None:
         self.betype = betype
         if linesearch is None:
             self.linesearch = LinesearchArmijo()
@@ -45,12 +47,12 @@ class CG(Optimizer):
 
         rlogger = RoptLogger(name=str(self))
         
-        g = problem.gradient(xk)
-        d = -g
+        g: np.ndarray = problem.gradient(xk)
+        d: np.ndarray = -g
 
         self._tic = time.time()
-        t = 0.
-        k = 0
+        t: float = 0.
+        k: int = 0
         while True:
             k = k + 1
 

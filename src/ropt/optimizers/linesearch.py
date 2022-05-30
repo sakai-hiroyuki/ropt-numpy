@@ -19,7 +19,7 @@ class LinesearchArmijo(Linesearch):
     c1 : float=1e-4
         Constant in Armijo rule. Must be 0 < c1 < 1.
     '''
-    def __init__(self, c1: float=1e-4):
+    def __init__(self, c1: float=1e-4) -> None:
         if not 0.0 < c1 < 1.0:
             raise ValueError(f'Invalid value: c1 = {c1}.')
         self.c1 = c1

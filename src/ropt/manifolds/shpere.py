@@ -6,7 +6,7 @@ from math import sqrt
 
 
 class Sphere(Manifold):
-    def __init__(self, dim: int):
+    def __init__(self, dim: int) -> None:
         self._dim = dim
 
     def __str__(self) -> str:

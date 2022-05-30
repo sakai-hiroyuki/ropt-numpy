@@ -1,6 +1,7 @@
 import time
+from typing import Optional
 from ropt.utils import RoptLogger
-from ropt.optimizers import Optimizer, LinesearchArmijo
+from ropt.optimizers import Optimizer, LinesearchArmijo, Linesearch
 
 
 class SD(Optimizer): 
@@ -19,7 +20,7 @@ class SD(Optimizer):
     [1] Absil, P-A., Robert Mahony, and Rodolphe Sepulchre. Optimization algorithms on matrix manifolds.
         Princeton University Press, 2009.
     '''
-    def __init__(self, linesearch=None, name: str=None, max_iter: int=300, min_gn: float=1e-6):
+    def __init__(self, linesearch=Optional[Linesearch], name: str=None, max_iter: int=300, min_gn: float=1e-6) -> None:
         if linesearch is None:
             self.linesearch = LinesearchArmijo()
         else:
@@ -36,8 +37,8 @@ class SD(Optimizer):
         rlogger = RoptLogger(name=str(self))
 
         self._tic = time.time()
-        t = 0.
-        k = 0
+        t: float = 0.
+        k: int = 0
         while True:
             k = k + 1
             g = problem.gradient(xk)
