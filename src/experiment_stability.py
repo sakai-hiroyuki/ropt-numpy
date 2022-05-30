@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
-from sklearn.datasets import make_spd_matrix
 import autograd.numpy as np
+import networkx as nx
 
 from ropt import Problem
 from ropt.utils import rlog_show
@@ -8,9 +8,13 @@ from ropt.manifolds import Sphere
 from ropt.optimizers import SD, CG, LinesearchWolfe
 
 
-def create_loss(A):
-    def loss(x):
-        return np.dot(x, np.dot(A, x))
+def create_loss(G: nx.Graph):
+    def loss(x: np.ndarray) -> float:
+        e0 = [e[0] for e in G.edges()]
+        e1 = [e[1] for e in G.edges()]
+        x0 = x[e0] ** 2
+        x1 = x[e1] ** 2
+        return np.sum(x ** 4) + 2 * np.dot(x0, x1)
 
     return loss
 
@@ -18,21 +22,23 @@ def create_loss(A):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-n', '--n_vertex', default=100, type=int)
-    parser.add_argument('-m', '--matrix', default='random', type=str)
+    parser.add_argument('-p', '--probability', default=0.25, type=float)
+    parser.add_argument('-g', '--graph', default='random', type=str)
     args = parser.parse_args()
 
     n: int = args.n_vertex
-    matrix: str = args.matrix
+    p: float = args.probability
+    graph: str = args.graph
 
-    if matrix == 'random':
-        A = make_spd_matrix(n)
-    elif matrix == 'diag':
-        A = np.diag([np.random.randint(1, 10) for _ in range(n)])
+    if graph == 'random':
+        G: nx.Graph = nx.fast_gnp_random_graph(n = n, p = 0.25)
+    elif graph == 'cycle':
+        G: nx.Graph = nx.cycle_graph(n)
     else:
         raise Exception()
 
     M = Sphere(n - 1)
-    loss = create_loss(A)
+    loss = create_loss(G)
     problem = Problem(M, loss)
 
     wolfe = LinesearchWolfe()

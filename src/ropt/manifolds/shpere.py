@@ -1,3 +1,4 @@
+from math import sin, cos
 import numpy as np
 from ropt.manifolds import Manifold
 
@@ -42,3 +43,7 @@ class Sphere(Manifold):
     def gradient(self, p: np.ndarray, g: np.ndarray) -> np.ndarray:
         w = np.reshape(p, (p.size, 1))
         return g - np.dot(np.dot(w, w.T), g)
+    
+    def exp(self, p: np.ndarray, v: np.ndarray) -> np.ndarray:
+        k: float = np.linalg.norm(v)
+        return cos(k) * p + sin(k) * v / k
