@@ -8,8 +8,8 @@ from ropt.manifolds import Sphere
 from ropt.optimizers import SD, CG, LinesearchWolfe, Linesearch
 
 
-def create_loss(A):
-    def loss(x):
+def create_loss(A: np.ndarray):
+    def loss(x: np.ndarray) -> float:
         return np.dot(x, np.dot(A, x))
 
     return loss
