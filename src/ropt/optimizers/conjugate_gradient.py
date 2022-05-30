@@ -1,5 +1,4 @@
 import time
-from typing import Optional
 import numpy as np
 from ropt.utils import RoptLogger
 from ropt.optimizers import Optimizer, LinesearchArmijo, Linesearch
@@ -25,10 +24,17 @@ class CG(Optimizer):
         Princeton University Press, 2009.
     [2] Sato, Hiroyuki, and Toshihiro Iwai. "A new, globally convergent Riemannian conjugate gradient method."
         Optimization 64.4 (2015): 1011-1031.
-    [3] Sato, Hiroyuki. "A Dai–Yuan-type Riemannian conjugate gradient method with the weak Wolfe conditions."
+    [3] Sato, Hiroyuki. "A Dai-Yuan-type Riemannian conjugate gradient method with the weak Wolfe conditions."
         Computational Optimization and Applications 64.1 (2016): 101-118.
     '''
-    def __init__(self, betype: str='FR', linesearch=Optional[Linesearch], reset: bool=True, name: str=None) -> None:
+    def __init__(
+        self,
+        betype: str='FR',
+        linesearch: Linesearch=None,
+        reset: bool=True,
+        name: str=None
+    ) -> None:
+
         self.betype = betype
         if linesearch is None:
             self.linesearch = LinesearchArmijo()

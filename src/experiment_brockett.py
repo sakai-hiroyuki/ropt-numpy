@@ -31,7 +31,6 @@ if __name__ == '__main__':
     cglist = ['FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2']
 
     opts: list[Optimizer] = []
-    
     opts.append(SD(linesearch=linesearch))
     for betype in cglist:
         opt = CG(betype=betype, linesearch=linesearch)

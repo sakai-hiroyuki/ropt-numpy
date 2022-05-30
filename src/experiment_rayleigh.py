@@ -5,7 +5,7 @@ import autograd.numpy as np
 from ropt import Problem
 from ropt.utils import rlog_show
 from ropt.manifolds import Sphere
-from ropt.optimizers import SD, CG, LinesearchWolfe
+from ropt.optimizers import SD, CG, LinesearchWolfe, Linesearch
 
 
 def create_loss(A):
@@ -35,15 +35,15 @@ if __name__ == '__main__':
     loss = create_loss(A)
     problem = Problem(M, loss)
 
-    wolfe = LinesearchWolfe()
+    linesearch: Linesearch = LinesearchWolfe()
 
     cglist = ['FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2']
 
     opts = []
 
-    opts.append(SD(linesearch=wolfe))
+    opts.append(SD(linesearch=linesearch))
     for betype in cglist:
-        opt = CG(betype=betype, linesearch=wolfe)
+        opt = CG(betype=betype, linesearch=linesearch)
         opts.append(opt)
 
     results = []
