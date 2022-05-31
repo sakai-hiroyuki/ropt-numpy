@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     linesearch: Linesearch = LinesearchWolfe()
 
-    cglist = ['FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2']
+    cglist = ['FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2', 'HZ']
 
     opts = []
 

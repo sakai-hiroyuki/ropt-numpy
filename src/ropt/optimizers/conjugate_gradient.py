@@ -13,7 +13,7 @@ class CG(Optimizer):
     ----------
     betype: str='FR'
         Select the suitable method from 'FR' (see [2]), 'DY' (see [3]),
-        'PRP', 'PRP+', 'HS', 'HS+', 'Hybrid1' and 'Hybrid2'.
+        'PRP', 'PRP+', 'HS', 'HS+', 'Hybrid1', 'Hybrid2' and 'HZ'.
     linesearch :
         Specify the line search algorithm when calculating the step size.
     
@@ -106,6 +106,8 @@ class CG(Optimizer):
                     betaFR = _compute_FR(M, d, step, xk, g, xknew, gnew)
                     betaPRP = _compute_PRP(M, d, step, xk, g, xknew, gnew)
                     beta = max(0, min(betaFR, betaPRP))
+                elif self.betype == 'HZ':
+                    beta = _compute_HZ(M, d, step, xk, g, xknew, gnew)
                 else:
                     raise Exception(f'Exception: Unknown beta type: {self.betype}')
             except Exception as e:
@@ -118,32 +120,43 @@ class CG(Optimizer):
 
 
 def _compute_FR(M, d, step, xk, g, xknew, gnew):
-    _vec = gnew
     _div = M.metric(xk, g, g)
-    z = _vec / _div
+    z = gnew / _div
 
     return M.metric(xknew, gnew, z)
 
 
 def _compute_DY(M, d, step, xk, g, xknew, gnew):
-    _vec = gnew
     _div = M.metric(xknew, gnew, M.transport(xk, step * d, d)) - M.metric(xk, g, d)
-    z = _vec / _div
+    z = gnew / _div
     
     return M.metric(xknew, gnew, z)
 
 
 def _compute_PRP(M, d, step, xk, g, xknew, gnew):
-    _vec = gnew - M.transport(xk, step * d, g)
+    _y = gnew - M.transport(xk, step * d, g)
     _div = M.metric(xk, g, g)
-    z = _vec / _div
+    z = _y / _div
     
     return M.metric(xknew, gnew, z)
 
 
 def _compute_HS(M, d, step, xk, g, xknew, gnew):
-    _vec = gnew - M.transport(xk, step * d, g)
+    _y = gnew - M.transport(xk, step * d, g)
     _div = M.metric(xknew, gnew, M.transport(xk, step * d, d)) - M.metric(xk, g, d)
-    z = _vec / _div
+    z = _y / _div
     
     return M.metric(xknew, gnew, z)
+
+
+def _compute_HZ(M, d, step, xk, g, xknew, gnew, mu: float=2.0):
+    if not mu > 1/4:
+        raise ValueError(f'Invalid value: mu = {mu}.')
+    
+    _y = gnew - M.transport(xk, step * d, g)
+    _gd = M.metric(xk, g, d)
+    _gnewd = M.metric(xknew, gnew, M.transport(xk, step * d, d))
+    _div = (_gnewd - _gd) ** 2
+    _m = M.norm(xknew, _y) ** 2
+    z = _m * _gnewd / _div
+    return _compute_HS(M, d, step, xk, g, xknew, gnew) - mu * z
