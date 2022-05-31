@@ -28,7 +28,7 @@ class SD(Optimizer):
 
         if name is None:
             name = 'SD'
-        super(SD, self).__init__(name=name)
+        super(SD, self).__init__(name=name, max_iter=max_iter, min_gn=min_gn)
 
     def solve(self, problem) -> RoptLogger:
         M = problem.manifold

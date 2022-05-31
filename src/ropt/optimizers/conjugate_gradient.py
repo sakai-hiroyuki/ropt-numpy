@@ -32,7 +32,9 @@ class CG(Optimizer):
         betype: str='FR',
         linesearch: Linesearch=None,
         reset: bool=True,
-        name: str=None
+        name: str=None,
+        max_iter: int=300,
+        min_gn: float=1e-6
     ) -> None:
 
         self.betype = betype
@@ -44,8 +46,7 @@ class CG(Optimizer):
 
         if name is None:
             name = 'CG(' + self.betype + ')'
-
-        super(CG, self).__init__(name=name)
+        super(CG, self).__init__(name=name, max_iter=max_iter, min_gn=min_gn)
 
     def solve(self, problem) -> RoptLogger:
         M = problem.manifold
