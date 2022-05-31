@@ -31,7 +31,8 @@ if __name__ == '__main__':
     n: int = 100
     p: float = 0.1
 
-    results = []
+    results1 = []
+    results2 = []
     for _ in range(100):
         G: nx.Graph = nx.fast_gnp_random_graph(n = n, p = 0.25)
         M = Sphere(n - 1)
@@ -44,10 +45,14 @@ if __name__ == '__main__':
         for betype in cglist:
             opt = CG(betype=betype, linesearch=linesearch, max_iter=1000)
             opts.append(opt)
-        row = []
+        row1 = []
+        row2 = []
         for opt in opts:
-            row.append(opt.solve(problem).n_iter)
-        results.append(row)
+            rlog = opt.solve(problem)
+            row1.append(rlog.n_iter)
+            row2.append(rlog.log[-1][2])
+        results1.append(row1)
+        results2.append(row2)
     
     for _ in range(100):
         A = make_spd_matrix(n)
@@ -57,15 +62,23 @@ if __name__ == '__main__':
         linesearch: Linesearch = LinesearchWolfe()
         cglist = ['FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2', 'HZ']
         opts = []
-        opts.append(SD(linesearch=linesearch))
+        opts.append(SD(linesearch=linesearch, max_iter=1000))
         for betype in cglist:
-            opt = CG(betype=betype, linesearch=linesearch)
+            opt = CG(betype=betype, linesearch=linesearch, max_iter=1000)
             opts.append(opt)
-        row = []
+        row1 = []
+        row2 = []
         for opt in opts:
-            row.append(opt.solve(problem).n_iter)
-        results.append(row)
+            rlog = opt.solve(problem)
+            row1.append(rlog.n_iter)
+            row2.append(rlog.log[-1][2])
+        results1.append(row1)
+        results2.append(row2)
 
-    df = pd.DataFrame(results, columns=['SD', 'FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2', 'HZ'])
-    df.to_csv('./output/result.csv', index=None)
-    performance_profile('./output/result.csv')
+    df1 = pd.DataFrame(results1, columns=['SD', 'FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2', 'HZ'])
+    df1.to_csv('./output/result1.csv', index=None)
+    performance_profile('./output/result1.csv')
+
+    df2 = pd.DataFrame(results2, columns=['SD', 'FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2', 'HZ'])
+    df2.to_csv('./output/result2.csv', index=None)
+    performance_profile('./output/result2.csv')
