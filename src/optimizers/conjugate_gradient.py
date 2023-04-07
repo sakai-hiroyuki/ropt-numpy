@@ -83,6 +83,7 @@ def _compute_FR(
     point_next,
     rgrad_next
 ) -> float:
+    
     _numer = manifold.inner_product(point_next, rgrad_next, rgrad_next)
     _denom = manifold.inner_product(point, rgrad, rgrad)
     return _numer / _denom
@@ -97,6 +98,7 @@ def _compute_DY(
     point_next,
     rgrad_next
 ) -> float:
+    
     _s: float = manifold.vector_transport(point, step * descent_direction, descent_direction)
     _derphi: float = manifold.inner_product(point, rgrad, descent_direction)
     _denom: float = manifold.inner_product(point_next, rgrad_next, _s) - _derphi
