@@ -1,7 +1,6 @@
 import time
 import numpy as np
-from ropt.utils import RoptLogger
-from ropt.optimizers import Optimizer, LinesearchArmijo, Linesearch
+from optimizers import Optimizer, LinesearchArmijo, Linesearch
 
 
 class CG(Optimizer):

@@ -4,7 +4,12 @@ import numpy as np
 
 class Linesearch(ABC):
     @abstractmethod
-    def search(self, problem, xk: np.ndarray, d: np.ndarray) -> float:
+    def search(
+        self,
+        problem,
+        point: np.ndarray,
+        descent_direction: np.ndarray
+    ) -> float:
         ...
 
 
@@ -19,18 +24,22 @@ class LinesearchArmijo(Linesearch):
     c1 : float=1e-4
         Constant in Armijo rule. Must be 0 < c1 < 1.
     '''
-    def __init__(self, c1: float=1e-4) -> None:
+    def __init__(
+        self,
+        c1: float=1e-4
+    ) -> None:
         if not 0.0 < c1 < 1.0:
             raise ValueError(f'Invalid value: c1 = {c1}.')
         self.c1 = c1
-    
-    def __str__(self) -> str:
-        return f'Armijo (c1={self.c1})'
 
-    def __call__(self, problem, xk: np.ndarray, d: np.ndarray, initial: float=1., shrinkage: float=0.5) -> float:
-        return self.search(problem, xk, d, initial=initial, shrinkage=shrinkage)
-
-    def search(self, problem, xk: np.ndarray, d: np.ndarray, initial: float=1., shrinkage: float=0.5) -> float:
+    def search(
+        self,
+        problem,
+        point: np.ndarray,
+        descent_direction: np.ndarray,
+        initial_step: float=1.,
+        shrinkage: float=0.5
+    ) -> float:
         '''
         Return the step size which satisfies the Armijo condition.
 
@@ -38,27 +47,19 @@ class LinesearchArmijo(Linesearch):
         Parameters
         ----------
         problem : Problem
-        xk : np.ndarray
+        point : np.ndarray
             Current point.
-        d : np.ndarray
+        descent_direction : np.ndarray
             Search direction.
-        upper : float=0.5
-            Maximum step size.
-        lower : float=1e-6
-            Minimum step size. If no suitable step size is found, return this value.
         shrinkage : float=0.5
             Reduction rate (< 1).
         '''
         def phi(alpha) -> float:
-            return problem.loss(problem.manifold.retraction(xk, alpha * d))
+            return problem.loss(problem.manifold.retraction(point, alpha * descent_direction))
 
-        def derphi(alpha) -> float: 
-            xknew = problem.manifold.retraction(xk, alpha * d)
-            dnew = problem.manifold.transport(xk, alpha * d, d)
-            return problem.manifold.metric(xknew, problem.gradient(xknew), dnew)
-
-        step = initial
-        while phi(step) > phi(0.0) + self.c1 * step * derphi(0.0) and step > 1e-6:
+        derphi: float = problem.manifold.inner_product(point, problem.gradient(point), descent_direction)
+        step: float = initial_step
+        while phi(step) > phi(0.0) + self.c1 * step * derphi and step > 1e-6:
             step *= shrinkage
 
         return step

@@ -12,4 +12,4 @@ class Problem(object):
     
     def gradient(self, x: np.ndarray) -> np.ndarray:
         egrad = grad(self._loss)
-        return self.manifold.gradient(x, egrad(x))
+        return self.manifold.egrad2rgrad(x, egrad(x))
