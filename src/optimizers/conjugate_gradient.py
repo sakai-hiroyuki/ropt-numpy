@@ -48,7 +48,10 @@ class ConjugateGradient(Optimizer):
         descent_direction = -rgrad
 
         for _ in range(300):
-            history.append(manifold.norm(point, rgrad))
+            rgrad_norm = manifold.norm(point, rgrad)
+            history.append(rgrad_norm)
+            if rgrad_norm <= 1e-6:
+                break
             
             step = self.linesearch.search(problem, point, descent_direction)
 

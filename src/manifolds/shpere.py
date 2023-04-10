@@ -45,7 +45,7 @@ class Sphere(Manifold):
         point: np.ndarray, 
         tangent_vector1: np.ndarray,
         tangent_vector2: np.ndarray,
-        is_scaled: bool=True
+        is_scaled: bool=False
     ) -> np.ndarray:
         _v = point + tangent_vector1
         _p = np.reshape(_v, (self.n, 1)) / np.linalg.norm(_v)

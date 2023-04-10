@@ -38,7 +38,10 @@ class SteepestDescent(Optimizer):
 
         for _ in range(300):
             rgrad = problem.gradient(point)
-            history.append(manifold.norm(point, rgrad))
+            rgrad_norm = manifold.norm(point, rgrad)
+            history.append(rgrad_norm)
+            if rgrad_norm <= 1e-6:
+                break
             descent_direction = -rgrad
             step = self.linesearch.search(problem, point, descent_direction)
             point = manifold.retraction(point, step * descent_direction)

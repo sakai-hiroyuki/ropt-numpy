@@ -38,7 +38,7 @@ class LinesearchArmijo(Linesearch):
         point: np.ndarray,
         descent_direction: np.ndarray,
         initial_step: float=1.,
-        shrinkage: float=0.5
+        shrinkage: float=0.9
     ) -> float:
         '''
         Return the step size which satisfies the Armijo condition.
@@ -84,9 +84,6 @@ class LinesearchWolfe(Linesearch):
         self.c1 = c1
         self.c2 = c2
 
-    def __str__(self) -> str:
-        return f'strong Wolfe (c1={self.c1}, c2={self.c2})'
-
     def __call__(self, problem, xk: np.ndarray, d: np.ndarray, maxiter: int=10) -> float:
         return self.search(problem, xk, d, maxiter=maxiter)
 
@@ -124,14 +121,14 @@ class LinesearchWolfe(Linesearch):
 
         def derphi(alpha):
             xknew = problem.manifold.retraction(xk, alpha * d)
-            dnew = problem.manifold.transport(xk, alpha * d, d)
+            dnew = problem.manifold.vector_transport(xk, alpha * d, d)
             gc[0] += 1
             gval[0] = problem.gradient(xknew)  # store for later use
             gval_alpha[0] = alpha
-            return problem.manifold.metric(xknew, gval[0], dnew)
+            return problem.manifold.inner_product(xknew, gval[0], dnew)
 
         gfk = problem.gradient(xk)
-        derphi0 = problem.manifold.metric(xk, gfk, d)
+        derphi0 = problem.manifold.inner_product(xk, gfk, d)
 
         step = _scalar_search_wolfe(phi, derphi, self.c1, self.c2, maxiter=maxiter)
         if step is None:

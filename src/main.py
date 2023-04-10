@@ -5,7 +5,7 @@ import autograd.numpy as np
 
 from problem import Problem
 from manifolds import Sphere
-from optimizers import SteepestDescent, ConjugateGradient, LinesearchArmijo
+from optimizers import (SteepestDescent, ConjugateGradient, MemorylessQuasiNewton, LinesearchWolfe, LinesearchArmijo)
 
 
 def create_loss(A: np.ndarray):
@@ -16,16 +16,16 @@ def create_loss(A: np.ndarray):
 
 
 if __name__ == '__main__':
-    n = 20
-    # A = np.diag([k + 1 for k in range(n)])
-    A = make_spd_matrix(n)
+    n = 100
+    _A = np.random.randn(n, n)
+    A = (_A + _A.T) / 2
     manifold = Sphere(n)
     initial_point = np.ones(n) / np.sqrt(n)
 
     loss = create_loss(A)
     problem = Problem(manifold, loss)
 
-    linesearch = LinesearchArmijo()
+    linesearch = LinesearchWolfe()
 
     optimizer = SteepestDescent(linesearch)
     y = optimizer.solve(problem, initial_point)
@@ -38,6 +38,11 @@ if __name__ == '__main__':
     plt.plot(x, y)
 
     optimizer = ConjugateGradient(linesearch, betatype='DY')
+    y = optimizer.solve(problem, initial_point)
+    x = range(len(y))
+    plt.plot(x, y)
+
+    optimizer = MemorylessQuasiNewton(linesearch)
     y = optimizer.solve(problem, initial_point)
     x = range(len(y))
     plt.plot(x, y)
