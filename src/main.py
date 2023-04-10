@@ -17,36 +17,33 @@ def create_loss(A: np.ndarray):
 
 if __name__ == '__main__':
     n = 100
-    _A = np.random.randn(n, n)
-    A = (_A + _A.T) / 2
+    A = np.diag([k + 1 for k in range(n)])
     manifold = Sphere(n)
     initial_point = np.ones(n) / np.sqrt(n)
 
     loss = create_loss(A)
     problem = Problem(manifold, loss)
 
-    linesearch = LinesearchWolfe()
+    linesearch = LinesearchWolfe(c1=1e-4, c2=0.999)
 
     optimizer = SteepestDescent(linesearch)
     y = optimizer.solve(problem, initial_point)
     x = range(len(y))
-    plt.plot(x, y)
+    plt.plot(x, y, label='SD')
 
-    optimizer = ConjugateGradient(linesearch, betatype='FR')
-    y = optimizer.solve(problem, initial_point)
-    x = range(len(y))
-    plt.plot(x, y)
-
-    optimizer = ConjugateGradient(linesearch, betatype='DY')
-    y = optimizer.solve(problem, initial_point)
-    x = range(len(y))
-    plt.plot(x, y)
+    betatypes = ['FR', 'DY', 'PRP', 'HS']
+    for betatype in betatypes:
+        optimizer = ConjugateGradient(linesearch, betatype=betatype)
+        y = optimizer.solve(problem, initial_point)
+        x = range(len(y))
+        plt.plot(x, y, label=f'CG({betatype})')
 
     optimizer = MemorylessQuasiNewton(linesearch)
     y = optimizer.solve(problem, initial_point)
     x = range(len(y))
-    plt.plot(x, y)
+    plt.plot(x, y, label='memoryless')
 
     plt.yscale('log')
+    plt.legend()
+    plt.grid(which='major')
     plt.show()
-

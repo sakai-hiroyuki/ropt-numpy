@@ -64,6 +64,10 @@ class ConjugateGradient(Optimizer):
                     beta = _compute_FR(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
                 elif self.betatype == 'DY':
                     beta = _compute_DY(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                elif self.betatype == 'PRP':
+                    beta = _compute_PRP(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                elif self.betatype == 'HS':
+                    beta = _compute_HS(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
                 else:
                     raise Exception(f'Exception: Unknown beta type: {self.betype}')
             except Exception as e:
@@ -102,8 +106,40 @@ def _compute_DY(
     rgrad_next
 ) -> float:
     
-    _s: float = manifold.vector_transport(point, step * descent_direction, descent_direction)
+    _numer = manifold.inner_product(point_next, rgrad_next, rgrad_next)
+    _transported_d = manifold.vector_transport(point, step * descent_direction, descent_direction)
     _derphi: float = manifold.inner_product(point, rgrad, descent_direction)
-    _denom: float = manifold.inner_product(point_next, rgrad_next, _s) - _derphi
-    z: np.ndarray = rgrad_next / _denom
-    return manifold.inner_product(point_next, rgrad_next, z)
+    _denom: float = manifold.inner_product(point_next, rgrad_next, _transported_d) - _derphi
+    return _numer / _denom
+
+
+def _compute_PRP(
+    manifold,
+    descent_direction,
+    step,
+    point,
+    rgrad,
+    point_next,
+    rgrad_next
+) -> float:
+    _rgrad_sub = rgrad_next - manifold.vector_transport(point, step * descent_direction, rgrad)
+    _numer = manifold.inner_product(point_next, rgrad_next, _rgrad_sub)
+    _denom = manifold.inner_product(point, rgrad, rgrad)
+    return _numer / _denom
+
+
+def _compute_HS(
+    manifold,
+    descent_direction,
+    step,
+    point,
+    rgrad,
+    point_next,
+    rgrad_next
+) -> float:
+    _rgrad_sub = rgrad_next - manifold.vector_transport(point, step * descent_direction, rgrad)
+    _numer = manifold.inner_product(point_next, rgrad_next, _rgrad_sub)
+    _transported_d = manifold.vector_transport(point, step * descent_direction, descent_direction)
+    _derphi: float = manifold.inner_product(point, rgrad, descent_direction)
+    _denom: float = manifold.inner_product(point_next, rgrad_next, _transported_d) - _derphi
+    return _numer / _denom
