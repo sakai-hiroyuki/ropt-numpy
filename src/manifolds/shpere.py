@@ -1,4 +1,3 @@
-from math import sin, cos
 import numpy as np
 from manifolds import Manifold
 
@@ -38,7 +37,7 @@ class Sphere(Manifold):
         tangent_vector: np.ndarray
     ) -> np.ndarray:
         k: float = np.linalg.norm(tangent_vector)
-        return cos(k) * point + sin(k) * tangent_vector / k
+        return np.cos(k) * point + np.sin(k) * tangent_vector / k
 
     def vector_transport(
         self,

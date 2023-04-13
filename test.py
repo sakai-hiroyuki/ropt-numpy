@@ -1,25 +1,10 @@
 import numpy as np
+from math import pi
 
-d = 5
 
-I = np.eye(d)
+if __name__ == '__main__':
+    n = 3
+    d = [[1 if i > j else 0 if i == j else -1 for j in range(n)] for i in range(n)]
 
-x = np.random.randn(d)
-px = np.reshape(x, (d, 1))
-
-y = np.random.randn(d)
-py = np.reshape(y, (d, 1))
-
-alpha = 3
-beta = 4
-
-H = I + alpha * (px @ px.T) + beta * (py @ py.T)
-
-xnorm = np.linalg.norm(x)
-ynorm = np.linalg.norm(y)
-
-det = 1 + alpha * xnorm ** 2 + beta * ynorm ** 2 + alpha * beta * (xnorm ** 2 * ynorm ** 2 - (x @ y) ** 2)
-
-print(np.linalg.eig(H)[0])
-print(np.linalg.det(H), det)
-
+    v = np.linalg.qr(np.random.rand(5, 2))[0]
+    print(v)
