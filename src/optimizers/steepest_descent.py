@@ -28,7 +28,8 @@ class SteepestDescent(Optimizer):
     def solve(
         self,
         problem,
-        initial_point: np.ndarray
+        initial_point: np.ndarray,
+        max_iter: int=1000
     ) -> list[float]:
         
         manifold = problem.manifold
@@ -36,7 +37,7 @@ class SteepestDescent(Optimizer):
 
         history = []
 
-        for _ in range(300):
+        for _ in range(max_iter):
             rgrad = problem.gradient(point)
             rgrad_norm = manifold.norm(point, rgrad)
             history.append(rgrad_norm)

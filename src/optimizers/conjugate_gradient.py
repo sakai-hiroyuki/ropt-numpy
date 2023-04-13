@@ -36,7 +36,8 @@ class ConjugateGradient(Optimizer):
     def solve(
         self,
         problem,
-        initial_point: np.ndarray
+        initial_point: np.ndarray,
+        max_iter: int=1000
     ) -> list[float]:
         
         manifold = problem.manifold
@@ -47,7 +48,7 @@ class ConjugateGradient(Optimizer):
         rgrad = problem.gradient(point)
         descent_direction = -rgrad
 
-        for _ in range(300):
+        for _ in range(max_iter):
             rgrad_norm = manifold.norm(point, rgrad)
             history.append(rgrad_norm)
             if rgrad_norm <= 1e-6:
@@ -66,8 +67,22 @@ class ConjugateGradient(Optimizer):
                     beta = _compute_DY(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
                 elif self.betatype == 'PRP':
                     beta = _compute_PRP(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                elif self.betatype == 'PRP+':
+                    beta_PRP = _compute_PRP(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                    beta = max(0., beta_PRP)
                 elif self.betatype == 'HS':
                     beta = _compute_HS(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                elif self.betatype == 'HS+':
+                    beta_HS = _compute_HS(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                    beta = max(0., beta_HS)
+                elif self.betatype == 'Hybrid1':
+                    beta_DY = _compute_DY(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                    beta_HS = _compute_HS(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                    beta = max(0., min(beta_DY, beta_HS))
+                elif self.betatype == 'Hybrid2':
+                    beta_FR = _compute_FR(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                    beta_PRP = _compute_PRP(manifold, descent_direction, step, point, rgrad, point_next, rgrad_next)
+                    beta = max(0., min(beta_FR, beta_PRP))
                 else:
                     raise Exception(f'Exception: Unknown beta type: {self.betype}')
             except Exception as e:
