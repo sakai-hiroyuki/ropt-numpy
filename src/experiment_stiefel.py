@@ -19,7 +19,7 @@ def create_loss(
 
 if __name__ == '__main__':
     n = 50
-    p = 20
+    p = 10
     max_iter = 1000
     
     A = make_spd_matrix(n)
