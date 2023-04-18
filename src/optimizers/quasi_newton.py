@@ -30,25 +30,27 @@ class MemorylessQuasiNewton(Optimizer):
             history.append(rgrad_norm)
             if rgrad_norm <= 1e-6:
                 break
+
+            if manifold.inner_product(point, descent_direction, rgrad) >= 0:
+                descent_direction = -rgrad
             
             step: float = self.linesearch.search(problem, point, descent_direction)
 
             point_next = manifold.retraction(point, step * descent_direction)
             rgrad_next = problem.gradient(point_next)
 
-            rgrad_sub = rgrad_next - manifold.vector_transport(point, step * descent_direction, rgrad)
+            y = rgrad_next - manifold.vector_transport(point, step * descent_direction, rgrad)
             s = manifold.vector_transport(point, step * descent_direction, step * descent_direction)
 
-            w = s / (s @ rgrad_sub) - rgrad_sub / (rgrad_sub @ rgrad_sub)
+            y_dot_y = manifold.inner_product(point_next, y, y)
+            s_dot_y = manifold.inner_product(point_next, s, y)
 
-            mu = (s @ s) * (rgrad_sub @ rgrad_sub) / (s @ rgrad_sub) ** 2
-            theta = max(1 / (1 - mu), -1e-5)
-            phi = ((0.1 * theta) - 1) / (0.1 * theta * (1 - mu) - 1)
+            w = s / s_dot_y - y / y_dot_y
 
             descent_direction = - rgrad_next
-            descent_direction += - (rgrad_sub @ rgrad_next) / (rgrad_sub @ rgrad_sub) * rgrad_sub
-            descent_direction += (s @ rgrad_next) / (s @ rgrad_sub) * s
-            descent_direction += phi * (rgrad_sub @ rgrad_sub) * (w @ rgrad_next) * w
+            descent_direction += - manifold.inner_product(point_next, y, rgrad_next) / y_dot_y * y
+            descent_direction += manifold.inner_product(point_next, s, rgrad_next) / s_dot_y * s
+            descent_direction += y_dot_y * manifold.inner_product(point_next, w, rgrad_next) * w
 
             point = point_next
             rgrad = rgrad_next

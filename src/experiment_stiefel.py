@@ -4,7 +4,7 @@ import autograd.numpy as np
 
 from problem import Problem
 from manifolds import Stiefel
-from optimizers import (SteepestDescent, ConjugateGradient, LinesearchWolfe)
+from optimizers import (SteepestDescent, ConjugateGradient, LinesearchWolfe, MemorylessQuasiNewton)
 
 
 def create_loss(
@@ -18,8 +18,8 @@ def create_loss(
 
 
 if __name__ == '__main__':
-    n = 50
-    p = 10
+    n = 100
+    p = 2
     max_iter = 1000
     
     A = make_spd_matrix(n)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     problem = Problem(manifold, loss)
 
-    linesearch = LinesearchWolfe(c1=1e-4, c2=0.999)
+    linesearch = LinesearchWolfe(c1=1e-4, c2=0.9)
     optimizer = SteepestDescent(linesearch)
     y = optimizer.solve(problem, initial_point, max_iter=max_iter)
     x = range(len(y))
@@ -44,6 +44,11 @@ if __name__ == '__main__':
         y = optimizer.solve(problem, initial_point, max_iter=max_iter)
         x = range(len(y))
         plt.plot(x, y, label=f'CG({betatype})')
+
+    optimizer = MemorylessQuasiNewton(linesearch=linesearch)
+    y = optimizer.solve(problem, initial_point, max_iter=max_iter)
+    x = range(len(y))
+    plt.plot(x, y, label='MQN')
 
     plt.yscale('log')
     plt.legend()
