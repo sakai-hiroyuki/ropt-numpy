@@ -1,9 +1,8 @@
 import autograd.numpy as np
-from argparse import ArgumentParser
 from sklearn.datasets import make_spd_matrix
 
 from ropt import Problem
-from ropt.utils import rlog_show
+from ropt.utils import log_show
 from ropt.manifolds import Manifold, Stiefel
 from ropt.optimizers import Optimizer, SD, CG, Linesearch, LinesearchWolfe
 
@@ -18,23 +17,13 @@ def create_loss(A: np.ndarray, N: np.ndarray):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('-n', default=5, type=int)
-    parser.add_argument('-p', default=2, type=int)
-    parser.add_argument('-m', '--matrix', default='random', type=str)
-    args = parser.parse_args()
+    n: int = 10
+    p: int = 5
 
-    n: int = args.n
-    p: int = args.p
-    matrix: str = args.matrix
+    np.random.seed(0)
 
-    if matrix == 'random':
-        A = make_spd_matrix(n)
-    elif matrix == 'diag':
-        A = np.diag([np.random.randint(1, 10) for _ in range(n)])
-    else:
-        raise Exception()
-
+    A = make_spd_matrix(n)
+    
     M: Manifold = Stiefel(p, n)
     N: np.ndarray = np.diag(np.array([n + 1 for n in range(p)]))
     loss = create_loss(A, N)
@@ -54,4 +43,4 @@ if __name__ == '__main__':
     for opt in opts:
         results.append(opt.solve(problem))
 
-    rlog_show(results)
+    log_show(results)

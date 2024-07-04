@@ -2,8 +2,6 @@ from math import sin, cos
 import numpy as np
 from ropt.manifolds import Manifold
 
-from math import sqrt
-
 
 class Sphere(Manifold):
     def __init__(self, dim: int) -> None:
@@ -21,29 +19,49 @@ class Sphere(Manifold):
         u = np.array([n for n in range(self.dim + 1)])
         return u / np.linalg.norm(u)
 
-    def metric(self, p: np.ndarray, v: np.ndarray, u: np.ndarray) -> float:
-        return np.dot(v, u)
+    def metric(
+        self,
+        point: np.ndarray,
+        tangent_vector1: np.ndarray,
+        tangent_vector2: np.ndarray
+    ) -> float:
+        return tangent_vector1 @ tangent_vector2
 
-    def norm(self, p: np.ndarray, v: np.ndarray) -> float:
-        return sqrt(self.metric(p, v, v))
+    def norm(
+        self,
+        point: np.ndarray,
+        tangent_vector: np.ndarray
+    ) -> float:
+        return np.sqrt(self.metric(point, tangent_vector, tangent_vector))
 
-    def retraction(self, p: np.ndarray, v: np.ndarray) -> np.ndarray:
-        return (p + v) / np.linalg.norm(p + v)
-    
-    def transport(self, p: np.ndarray, v: np.ndarray, u: np.ndarray, is_scaled: bool=True) -> np.ndarray:   
-        w = np.reshape(p + v, (p.size, 1))
-        direction: np.ndarray = np.dot(np.identity(p.size) - np.dot(w, w.T) / np.dot(p + v, p + v), u)
+    def retraction(
+        self,
+        point: np.ndarray,
+        tangent_vector: np.ndarray
+    ) -> np.ndarray:
+        return (point + tangent_vector) / np.linalg.norm(point + tangent_vector)
+        
+    def transport(
+        self,
+        point: np.ndarray,
+        tangent_vector1: np.ndarray,
+        tangent_vector2: np.ndarray,
+        is_scaled: bool=True
+    ) -> np.ndarray:
+        v = point + tangent_vector1
+        _point = np.reshape(v, (point.size, 1))
+        direction: np.ndarray = (np.identity(point.size) - (_point @ _point.T) / (v @ v)) @ tangent_vector2
 
         if is_scaled:
-            scale: float = min(1.0, np.linalg.norm(u) / np.linalg.norm(direction))
+            scale: float = min(1.0, np.linalg.norm(tangent_vector2) / np.linalg.norm(direction))
             return scale * direction
         else:
             return direction
 
-    def gradient(self, p: np.ndarray, g: np.ndarray) -> np.ndarray:
-        w = np.reshape(p, (p.size, 1))
-        return g - np.dot(np.dot(w, w.T), g)
-    
-    def exp(self, p: np.ndarray, v: np.ndarray) -> np.ndarray:
-        k: float = np.linalg.norm(v)
-        return cos(k) * p + sin(k) * v / k
+    def egrad2rgrad(
+        self,
+        point: np.ndarray,
+        egrad: np.ndarray
+    ) -> np.ndarray:
+        _point = np.reshape(point, (point.size, 1))
+        return egrad - np.dot(np.dot(_point, _point.T), egrad)

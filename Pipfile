@@ -1,18 +1,18 @@
 [[source]]
-name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
+name = "pypi"
+
+[packages]
+scikit-learn = "*"
+matplotlib = "*"
+pandas = "*"
+autograd = "*"
+numpy = "1.26.0"
+networkx = "*"
 
 [dev-packages]
 
-[packages]
-numpy = "*"
-autograd = "*"
-matplotlib = "*"
-sklearn = "*"
-tqdm = "*"
-pandas = "*"
-networkx = "*"
-
 [requires]
-python_version = "3.9"
+python_version = "3.12"
+python_full_version = "3.12.1"

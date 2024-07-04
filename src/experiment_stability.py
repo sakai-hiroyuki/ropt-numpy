@@ -1,9 +1,8 @@
-from argparse import ArgumentParser
 import autograd.numpy as np
 import networkx as nx
 
 from ropt import Problem
-from ropt.utils import rlog_show
+from ropt.utils import log_show
 from ropt.manifolds import Sphere
 from ropt.optimizers import SD, CG, LinesearchWolfe, Linesearch
 
@@ -20,23 +19,10 @@ def create_loss(G: nx.Graph):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('-n', '--n_vertex', default=100, type=int)
-    parser.add_argument('-p', '--probability', default=0.25, type=float)
-    parser.add_argument('-g', '--graph', default='random', type=str)
-    args = parser.parse_args()
-
-    n: int = args.n_vertex
-    p: float = args.probability
-    graph: str = args.graph
-
-    if graph == 'random':
-        G: nx.Graph = nx.fast_gnp_random_graph(n = n, p = 0.25)
-    elif graph == 'cycle':
-        G: nx.Graph = nx.cycle_graph(n)
-    else:
-        raise Exception()
-
+    n: int = 100
+    p: float = 0.1
+    
+    G: nx.Graph = nx.fast_gnp_random_graph(n=n, p =p)
     M = Sphere(n - 1)
     loss = create_loss(G)
     problem = Problem(M, loss)
@@ -46,17 +32,15 @@ if __name__ == '__main__':
     cglist = ['FR', 'DY', 'PRP', 'HS', 'Hybrid1', 'Hybrid2', 'HZ']
 
     opts = []
-
     opts.append(SD(linesearch=linesearch))
     for betype in cglist:
         opt = CG(betype=betype, linesearch=linesearch)
         opts.append(opt)
-
     results = []
 
     for opt in opts:
         results.append(opt.solve(problem))
 
-    rlog_show(results)
+    log_show(results)
     for result in results:
         result.to_csv()

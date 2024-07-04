@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from ropt.utils import RoptLogger
+from ropt.utils import Logger
 from ropt.optimizers import Optimizer, LinesearchArmijo, Linesearch
 
 
@@ -48,11 +48,15 @@ class CG(Optimizer):
             name = 'CG(' + self.betype + ')'
         super(CG, self).__init__(name=name, max_iter=max_iter, min_gn=min_gn)
 
-    def solve(self, problem) -> RoptLogger:
+    def solve(
+            self,
+            problem
+        ) -> Logger:
+        
         M = problem.manifold
         xk = M.initial
 
-        rlogger = RoptLogger(name=str(self))
+        logger = Logger(name=str(self))
         
         g: np.ndarray = problem.gradient(xk)
         d: np.ndarray = -g
@@ -64,9 +68,9 @@ class CG(Optimizer):
             k = k + 1
 
             g = problem.gradient(xk)
-            gn = M.norm(xk, g)
+            grad_norm = M.norm(xk, g)
             v = problem.loss(xk)
-            rlogger.writelog(gn=gn, val=v, time=t)
+            logger.append(grad_norm, v, t)
             t = time.time() - self._tic
 
             if self.reset and M.metric(xk, d, g) > 0:
@@ -75,9 +79,9 @@ class CG(Optimizer):
             step = self.linesearch(problem, xk, d)
 
             if k == 1 or k % 100 == 0:
-                print(f'{k:>5}, {v:.5e}, {gn:.5e}, {t:.3f}')
+                print(f'{k:>5}, {v:.5e}, {grad_norm:.5e}, {t:.3f}')
 
-            if self.stop(k, gn):
+            if self.stop(k, grad_norm):
                 break
 
             xknew = M.retraction(xk, step * d)
@@ -86,29 +90,29 @@ class CG(Optimizer):
             beta = None
             try:
                 if self.betype == 'FR':
-                    beta = _compute_FR(M, d, step, xk, g, xknew, gnew)
+                    beta = compute_FR(M, d, step, xk, g, xknew, gnew)
                 elif self.betype == 'DY':
-                    beta = _compute_DY(M, d, step, xk, g, xknew, gnew)
+                    beta = compute_DY(M, d, step, xk, g, xknew, gnew)
                 elif self.betype == 'PRP':
-                    beta = _compute_PRP(M, d, step, xk, g, xknew, gnew)
+                    beta = compute_PRP(M, d, step, xk, g, xknew, gnew)
                 elif self.betype == 'PRP+':
-                    betaPRP = _compute_PRP(M, d, step, xk, g, xknew, gnew)
+                    betaPRP = compute_PRP(M, d, step, xk, g, xknew, gnew)
                     beta = max(0.0, betaPRP)
                 elif self.betype == 'HS':
-                    beta = _compute_HS(M, d, step, xk, g, xknew, gnew)
+                    beta = compute_HS(M, d, step, xk, g, xknew, gnew)
                 elif self.betype == 'HS+':
-                    betaHS = _compute_HS(M, d, step, xk, g, xknew, gnew)
+                    betaHS = compute_HS(M, d, step, xk, g, xknew, gnew)
                     beta = max(0.0, betaHS)
                 elif self.betype == 'Hybrid1':
-                    betaDY = _compute_DY(M, d, step, xk, g, xknew, gnew)
-                    betaHS = _compute_HS(M, d, step, xk, g, xknew, gnew)
+                    betaDY = compute_DY(M, d, step, xk, g, xknew, gnew)
+                    betaHS = compute_HS(M, d, step, xk, g, xknew, gnew)
                     beta = max(0, min(betaDY, betaHS))
                 elif self.betype == 'Hybrid2':
-                    betaFR = _compute_FR(M, d, step, xk, g, xknew, gnew)
-                    betaPRP = _compute_PRP(M, d, step, xk, g, xknew, gnew)
+                    betaFR = compute_FR(M, d, step, xk, g, xknew, gnew)
+                    betaPRP = compute_PRP(M, d, step, xk, g, xknew, gnew)
                     beta = max(0, min(betaFR, betaPRP))
                 elif self.betype == 'HZ':
-                    beta = _compute_HZ(M, d, step, xk, g, xknew, gnew)
+                    beta = compute_HZ(M, d, step, xk, g, xknew, gnew)
                 else:
                     raise Exception(f'Exception: Unknown beta type: {self.betype}')
             except Exception as e:
@@ -117,24 +121,24 @@ class CG(Optimizer):
             d = -gnew + beta * M.transport(xk, step * d, d)
             xk = xknew
 
-        return rlogger
+        return logger
 
 
-def _compute_FR(M, d, step, xk, g, xknew, gnew):
+def compute_FR(M, d, step, xk, g, xknew, gnew):
     _div = M.metric(xk, g, g)
     z = gnew / _div
 
     return M.metric(xknew, gnew, z)
 
 
-def _compute_DY(M, d, step, xk, g, xknew, gnew):
+def compute_DY(M, d, step, xk, g, xknew, gnew):
     _div = M.metric(xknew, gnew, M.transport(xk, step * d, d)) - M.metric(xk, g, d)
     z = gnew / _div
     
     return M.metric(xknew, gnew, z)
 
 
-def _compute_PRP(M, d, step, xk, g, xknew, gnew):
+def compute_PRP(M, d, step, xk, g, xknew, gnew):
     _y = gnew - M.transport(xk, step * d, g)
     _div = M.metric(xk, g, g)
     z = _y / _div
@@ -142,7 +146,7 @@ def _compute_PRP(M, d, step, xk, g, xknew, gnew):
     return M.metric(xknew, gnew, z)
 
 
-def _compute_HS(M, d, step, xk, g, xknew, gnew):
+def compute_HS(M, d, step, xk, g, xknew, gnew):
     _y = gnew - M.transport(xk, step * d, g)
     _div = M.metric(xknew, gnew, M.transport(xk, step * d, d)) - M.metric(xk, g, d)
     z = _y / _div
@@ -150,7 +154,7 @@ def _compute_HS(M, d, step, xk, g, xknew, gnew):
     return M.metric(xknew, gnew, z)
 
 
-def _compute_HZ(M, d, step, xk, g, xknew, gnew, mu: float=2.0):
+def compute_HZ(M, d, step, xk, g, xknew, gnew, mu: float=2.0):
     if not mu > 1/4:
         raise ValueError(f'Invalid value: mu = {mu}.')
     
@@ -160,4 +164,4 @@ def _compute_HZ(M, d, step, xk, g, xknew, gnew, mu: float=2.0):
     _div = (_gnewd - _gd) ** 2
     _m = M.norm(xknew, _y) ** 2
     z = _m * _gnewd / _div
-    return _compute_HS(M, d, step, xk, g, xknew, gnew) - mu * z
+    return compute_HS(M, d, step, xk, g, xknew, gnew) - mu * z

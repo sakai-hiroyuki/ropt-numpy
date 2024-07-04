@@ -10,25 +10,50 @@ class Manifold(ABC):
 
     @property
     @abstractmethod
-    def initial(self) -> np.ndarray:
+    def initial(
+        self
+    ) -> np.ndarray:
         ...
 
     @abstractmethod
-    def metric(self, p: np.ndarray, v: np.ndarray, u: np.ndarray) -> float:
+    def metric(
+        self,
+        point: np.ndarray,
+        tangent_vector1: np.ndarray,
+        tangent_vector2: np.ndarray
+    ) -> float:
         ...
 
     @abstractmethod
-    def norm(self, p: np.ndarray, v: np.ndarray) -> float:
+    def norm(
+        self,
+        point: np.ndarray,
+        tangent_vector: np.ndarray
+    ) -> float:
         ...
 
     @abstractmethod
-    def retraction(self, p: np.ndarray, v: np.ndarray) -> np.ndarray:
+    def retraction(
+        self,
+        point: np.ndarray,
+        tangent_vector: np.ndarray
+    ) -> np.ndarray:
         ...
 
     @abstractmethod
-    def transport(self, p: np.ndarray, v: np.ndarray, u: np.ndarray, is_scaled: bool=True) -> np.ndarray:  
+    def transport(
+        self,
+        point: np.ndarray,
+        tangent_vector1: np.ndarray,
+        tangent_vector2: np.ndarray,
+        is_scaled: bool=True
+    ) -> np.ndarray:  
         ...
 
     @abstractmethod
-    def gradient(self, x: np.ndarray, g: np.ndarray) -> np.ndarray:
+    def egrad2rgrad(
+        self,
+        point: np.ndarray,
+        egrad: np.ndarray
+    ) -> np.ndarray:
         ...

@@ -4,7 +4,12 @@ import numpy as np
 
 class Linesearch(ABC):
     @abstractmethod
-    def search(self, problem, xk: np.ndarray, d: np.ndarray) -> float:
+    def search(
+        self,
+        problem,
+        xk: np.ndarray,
+        d: np.ndarray
+    ) -> float:
         ...
 
 
@@ -15,7 +20,6 @@ class LinesearchArmijo(Linesearch):
     ----------
     Parameters
     ----------
-
     c1 : float=1e-4
         Constant in Armijo rule. Must be 0 < c1 < 1.
     '''
@@ -27,10 +31,24 @@ class LinesearchArmijo(Linesearch):
     def __str__(self) -> str:
         return f'Armijo (c1={self.c1})'
 
-    def __call__(self, problem, xk: np.ndarray, d: np.ndarray, initial: float=1., shrinkage: float=0.5) -> float:
+    def __call__(
+        self,
+        problem,
+        xk: np.ndarray,
+        d: np.ndarray,
+        initial: float=1.,
+        shrinkage: float=0.5
+    ) -> float:
         return self.search(problem, xk, d, initial=initial, shrinkage=shrinkage)
 
-    def search(self, problem, xk: np.ndarray, d: np.ndarray, initial: float=1., shrinkage: float=0.5) -> float:
+    def search(
+        self,
+        problem,
+        xk: np.ndarray,
+        d: np.ndarray,
+        initial: float=1.,
+        shrinkage: float=0.5
+    ) -> float:
         '''
         Return the step size which satisfies the Armijo condition.
 
@@ -77,7 +95,11 @@ class LinesearchWolfe(Linesearch):
     c2 : float=0.9
         Constant in curvature condition. Must be 0 < c1 < c2 < 1.
     '''
-    def __init__(self, c1: float=1e-4, c2: float=0.9):
+    def __init__(
+        self,
+        c1: float=1e-4,
+        c2: float=0.9
+    ) -> None:
         if not 0.0 < c1 < c2 < 1.0:
             raise ValueError(f'Invalid values: (c1, c2) = ({c1}, {c2}).')
         self.c1 = c1
@@ -86,10 +108,22 @@ class LinesearchWolfe(Linesearch):
     def __str__(self) -> str:
         return f'strong Wolfe (c1={self.c1}, c2={self.c2})'
 
-    def __call__(self, problem, xk: np.ndarray, d: np.ndarray, maxiter: int=10) -> float:
+    def __call__(
+        self,
+        problem,
+        xk: np.ndarray,
+        d: np.ndarray,
+        maxiter: int=10
+    ) -> float:
         return self.search(problem, xk, d, maxiter=maxiter)
 
-    def search(self, problem, xk: np.ndarray, d: np.ndarray, maxiter: int=10) -> float:
+    def search(
+        self,
+        problem,
+        xk: np.ndarray,
+        d: np.ndarray,
+        maxiter: int=10
+    ) -> float:
         '''
         Returns the step size that satisfies the strong Wolfe condition.
         Scipy.optimize.line_search in SciPy v1.4.1 modified to Riemannian manifold.

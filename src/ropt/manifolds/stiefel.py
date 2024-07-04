@@ -1,6 +1,4 @@
 import numpy as np
-import numpy.linalg as la
-from math import sqrt
 
 from ropt.manifolds import Manifold
 
@@ -11,64 +9,89 @@ class Stiefel(Manifold):
         self._n = n
 
     def __str__(self) -> str:
-        return 'Stiefel Manifold St({0},{1})'.format(self._p, self._n)
+        return f'Stiefel Manifold St({self._p},{self._n})'
 
     @property
     def dim(self) -> int:
-        t1 = self._n * self._p
-        t2 = self._p * (self._p + 1) / 2
-        return int(t1 - t2)
+        return int(self._n * self._p - self._p * (self._p + 1) / 2)
 
     @property
     def initial(self) -> np.ndarray:
-        u = np.ones((self._n, self._p))
-        q, _ = la.qr(u)
-        return q
+        return qf(np.ones((self._n, self._p)))
 
-    def metric(self, p: np.ndarray, v: np.ndarray, u: np.ndarray) -> float:
-        return np.trace(np.dot(v.T, u))
+    def metric(
+        self,
+        point: np.ndarray,
+        tangent_vector1: np.ndarray,
+        tangent_vector2: np.ndarray
+    ) -> float:
+        return np.trace(tangent_vector1.T @ tangent_vector2)
 
-    def norm(self, p: np.ndarray, v: np.ndarray) -> float:
-        return sqrt(self.metric(p, v, v))
+    def norm(
+        self,
+        point: np.ndarray,
+        tangent_vector: np.ndarray
+    ) -> float:
+        return np.sqrt(self.metric(point, tangent_vector, tangent_vector))
     
-    def retraction(self, p: np.ndarray, v: np.ndarray) -> np.ndarray:
-        return self._qf(p + v)
+    def retraction(
+        self,
+        point: np.ndarray,
+        tangent_vector: np.ndarray
+    ) -> np.ndarray:
+        return qf(point + tangent_vector)
 
-    def transport(self, p: np.ndarray, v: np.ndarray, u: np.ndarray, is_scaled: bool=True) -> np.ndarray:
-        direction: np.ndarray = self._Dqf(p + v, u)
+    def transport(
+        self,
+        point: np.ndarray,
+        tangent_vector1: np.ndarray,
+        tangent_vector2: np.ndarray,
+        is_scaled: bool=True
+    ) -> np.ndarray:
+        
+        v: np.ndarray = Dqf(point + tangent_vector1, tangent_vector2)
 
         if is_scaled:
-            scale: float = min(1.0, self.norm(p, u) / self.norm(self.retraction(p, v), direction))
-            return scale * direction
+            r = self.norm(point, tangent_vector2) / self.norm(self.retraction(point, tangent_vector1), v)
+            scale = min(1.0, r)
+            return scale * v
         else:
-            return direction
+            return v
     
-    def gradient(self, p: np.ndarray, g: np.ndarray) -> np.ndarray:
-        w1 = np.dot(p, self._skew(np.dot(p.T, g)))
-        w2 = np.dot(np.identity(self._n) - np.dot(p, p.T), g)
-        return w1 + w2
-    
-    def _sym(self, v: np.ndarray) -> np.ndarray:
-        return (v + v.T) / 2
+    def egrad2rgrad(
+        self,
+        point: np.ndarray,
+        egrad: np.ndarray
+    ) -> np.ndarray:
+        return point @ skew(point.T @ egrad) + (np.identity(self._n) - point @ point.T) @ egrad
 
-    def _skew(self, v: np.ndarray) -> np.ndarray:
-        return (v - v.T) / 2
 
-    def _qf(self, v: np.ndarray) -> np.ndarray:
-        return la.qr(v)[0]
-    
-    def _rhoskew(self, v: np.ndarray) -> np.ndarray:
-        n: int = v.shape[0]
-        w: np.ndarray = v
-        for i in range(n):
-            for j in range(i, n):
-                if i == j:
-                    w[i][j] = 0.0
-                else:
-                    w[i][j] = -v[i][j]
-        return w
+def Dqf(
+    tangent_vector1: np.ndarray,
+    tangent_vector2: np.ndarray
+) -> np.ndarray:
+    n = tangent_vector1.shape[0]
 
-    def _Dqf(self, v: np.ndarray, u: np.ndarray) -> np.ndarray:
-        w1 = np.dot(self._qf(v), self._rhoskew(np.dot(self._qf(v).T, np.dot(u, la.inv(np.dot(self._qf(v).T, v))))))
-        w2 = np.dot(np.identity(self._n) - np.dot(self._qf(v), self._qf(v).T), np.dot(u, la.inv(np.dot(self._qf(v).T, v))))
-        return w1 + w2
+    w = tangent_vector2 @ np.linalg.inv(qf(tangent_vector1).T @ tangent_vector1)
+
+    v = np.identity(n) - qf(tangent_vector1) @ qf(tangent_vector1).T
+    v = v @ w
+    v = v + qf(tangent_vector1) @ rhoskew(qf(tangent_vector1).T @ w)
+    return v
+
+
+def qf(m: np.ndarray) -> np.ndarray:
+    return np.linalg.qr(m)[0]
+
+
+def rhoskew(m: np.ndarray) -> np.ndarray:
+    tril = np.tril(np.ones_like(m))
+    return tril * m - (tril * m).T
+
+
+def sym(m: np.ndarray) -> np.ndarray:
+    return (m + m.T) / 2
+
+
+def skew(m: np.ndarray) -> np.ndarray:
+    return (m - m.T) / 2
