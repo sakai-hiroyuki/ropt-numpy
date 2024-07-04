@@ -1,1 +1,1 @@
-# Ropt
+# ropt-numpy
